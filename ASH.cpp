@@ -10,6 +10,14 @@
 #include <string.h>
 #include <stdlib.h>
 
+#ifdef _WIN32
+// assume host is little endian
+inline uint32_t BIG_TO_HOST(uint32_t x) { return (((x & 0xFF) << 24) | ((x & 0xFF00) << 8) | ((x & 0xFF0000) >> 8) | ((x & 0xFF000000) >> 24)); }
+#else
+#include <arpa/inet.h>
+inline uint32_t BIG_TO_HOST(uint32_t x) { return ntohl(x); }
+#endif
+
 // LOWORD, __ROL__, and __ROL2__ are from https://github.com/joxeankoret/tahh/blob/master/comodo/defs.h
 // The Copyright is:    Copyright (c) 2007-2015 Hex-Rays
 #define LOWORD(x) (*((uint16_t*)&(x)))
@@ -151,12 +159,12 @@ int main(int argc, char **argv)
     outbuf1 = outbuf;
     outbuf2 = outbuf;
     memset(outbuf, 0, decompressed_size);
-    v14 = ((input_content1[2] & 0xFF00 | (input_content1[2] << 16)) << 8) | (((input_content1[2] >> 16) | input_content1[2] & 0xFF0000u) >> 8);
+    v14 = BIG_TO_HOST(input_content1[2]);
     v68 = 0;
     v71 = 0;
     v67 = 16;
-    v15 = ((input_content1[3] & 0xFF00 | (input_content1[3] << 16)) << 8) | (((input_content1[3] >> 16) | input_content1[3] & 0xFF0000u) >> 8);
-    v16 = ((*(uint32_t *)((char *)input_content1 + v14) & 0xFF00 | (*(uint32_t *)((char *)input_content1 + v14) << 16)) << 8) | (((*(uint32_t *)((char *)input_content1 + v14) >> 16) | *(uint32_t *)((char *)input_content1 + v14) & 0xFF0000u) >> 8);
+    v15 = BIG_TO_HOST(input_content1[2]);
+    v16 = BIG_TO_HOST(*(uint32_t *)((char *)input_content + v14));
     v70 = v14 + 4;
     v63 = (uint16_t *)malloc(0x100000u);
     memset(v63, 0, 0x100000u);
@@ -171,7 +179,7 @@ int main(int argc, char **argv)
             if (v68 == 31)
             {
                 Count = v15 >> 31;
-                v15 = (((*(uint32_t *)((char *)input_content1 + v67) >> 16) | *(uint32_t *)((char *)input_content1 + v67) & 0xFF0000u) >> 8) | ((*(uint32_t *)((char *)input_content1 + v67) & 0xFF00 | (*(uint32_t *)((char *)input_content1 + v67) << 16)) << 8);
+                v15 = BIG_TO_HOST(*(uint32_t *)((char *)input_content1 + v67));
                 v67 += 4;
                 v68 = 0;
             }
@@ -196,7 +204,7 @@ int main(int argc, char **argv)
         {
             if (v68 == 23)
             {
-                v15 = ((*(uint32_t *)((char *)input_content1 + v67) & 0xFF00 | (*(uint32_t *)((char *)input_content1 + v67) << 16)) << 8) | (((*(uint32_t *)((char *)input_content1 + v67) >> 16) | *(uint32_t *)((char *)input_content1 + v67) & 0xFF0000u) >> 8);
+                v15 = BIG_TO_HOST(*(uint32_t *)((char *)input_content1 + v67));
                 v67 += 4;
                 v68 = 0;
                 goto LABEL_18;
@@ -208,8 +216,8 @@ int main(int argc, char **argv)
             v21 = *(uint32_t *)((char *)input_content1 + v67);
             v67 += 4;
             v19 = v68 - 23;
-            v20 |= ((((v21 >> 16) | v21 & 0xFF0000) >> 8) | ((v21 & 0xFF00 | (v21 << 16)) << 8)) >> (64 - (v68 + 9));
-            v15 = ((((v21 >> 16) | v21 & 0xFF0000) >> 8) | ((v21 & 0xFF00 | (v21 << 16)) << 8)) << (v68 - 23);
+            v20 |= BIG_TO_HOST(v21) >> (64 - (v68 + 9));
+            v15 = BIG_TO_HOST(v21) << (v68 - 23);
         }
         v68 = v19;
     LABEL_18:
@@ -250,7 +258,7 @@ int main(int argc, char **argv)
             if (v71 == 31)
             {
                 Counta = v16 >> 31;
-                v16 = ((*(uint32_t *)((char *)input_content2 + v28) & 0xFF00 | (*(uint32_t *)((char *)input_content2 + v28) << 16)) << 8) | (((*(uint32_t *)((char *)input_content2 + v28) >> 16) | *(uint32_t *)((char *)input_content2 + v28) & 0xFF0000u) >> 8);
+                v16 = BIG_TO_HOST(*(uint32_t *)((char *)input_content2 + v28));
                 v28 += 4;
                 v71 = 0;
                 v70 = v28;
@@ -274,7 +282,7 @@ int main(int argc, char **argv)
         if ((unsigned int)(v71 + 11) > 0x20)
         {
             v30 = v16 >> 21;
-            v31 = ((*(uint32_t *)((char *)input_content2 + v28) & 0xFF00 | (*(uint32_t *)((char *)input_content2 + v28) << 16)) << 8) | (((*(uint32_t *)((char *)input_content2 + v28) >> 16) | *(uint32_t *)((char *)input_content2 + v28) & 0xFF0000u) >> 8);
+            v31 = BIG_TO_HOST(*(uint32_t *)((char *)input_content2 + v28));
             v70 = v28 + 4;
             v29 = v71 - 21;
             LOWORD(v32) = (v31 >> (64 - (v71 + 11))) | v30;
@@ -285,7 +293,7 @@ int main(int argc, char **argv)
         v61 = v16 >> 21;
         if (v29 == 32)
         {
-            v16 = ((*(uint32_t *)((char *)input_content2 + v28) & 0xFF00 | (*(uint32_t *)((char *)input_content2 + v28) << 16)) << 8) | (((*(uint32_t *)((char *)input_content2 + v28) >> 16) | *(uint32_t *)((char *)input_content2 + v28) & 0xFF0000u) >> 8);
+            v16 = BIG_TO_HOST(*(uint32_t *)((char *)input_content2 + v28));
             LOWORD(v32) = v61;
             v71 = 0;
             v70 = v28 + 4;
@@ -341,7 +349,7 @@ int main(int argc, char **argv)
                     v41 = v15 >> 31;
                     if (v39 == 31)
                     {
-                        v15 = ((*(uint32_t *)((char *)input_content2 + v38) & 0xFF00 | (*(uint32_t *)((char *)input_content2 + v38) << 16)) << 8) | (((*(uint32_t *)((char *)input_content2 + v38) >> 16) | *(uint32_t *)((char *)input_content2 + v38) & 0xFF0000u) >> 8);
+                        v15 = BIG_TO_HOST(*(uint32_t *)((char *)input_content2 + v38));
                         v38 += 4;
                         v39 = 0;
                     }
@@ -376,7 +384,7 @@ int main(int argc, char **argv)
                 v46 = v16 >> 31;
                 if (v71 == 31)
                 {
-                    v16 = ((*(uint32_t *)((char *)input_content2 + v70) & 0xFF00 | (*(uint32_t *)((char *)input_content2 + v70) << 16)) << 8) | (((*(uint32_t *)((char *)input_content2 + v70) >> 16) | *(uint32_t *)((char *)input_content2 + v70) & 0xFF0000u) >> 8);
+                    v16 = BIG_TO_HOST(*(uint32_t *)((char *)input_content2 + v70));
                     v70 += 4;
                     v71 = 0;
                 }
