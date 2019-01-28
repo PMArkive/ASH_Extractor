@@ -115,10 +115,13 @@ int main(int argc, char **argv)
     printf(" ASH v0.1\n by crediar\n");
     printf(" built %s\n", "Aug 20 2008");
     printf(" #wiidev efnet\n\n");
-    //if (argc != 2)
-    //  return 0;
-    argv[1] = (char *)"D:/code2/ASH_2/Debug/mii.arc.ash";
+#if _DEBUG
+    input_file0 = fopen("D:/code2/ASH_2/Debug/mii.arc.ash", "rb");
+#else
+    if (argc != 2)
+        return 0;
     input_file0 = fopen(argv[1], "rb");
+#endif
     input_file1 = input_file0;
     if (!input_file0)
     {
@@ -422,6 +425,7 @@ int main(int argc, char **argv)
             do
             {
             LABEL_65:
+                // CRASHES here due to out-of-bound buffer access (v49) with mii.arc.ash
                 *outbuf1++ = *(v49++ - 1);
                 --v48;
             } while (v48);
