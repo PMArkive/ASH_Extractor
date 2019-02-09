@@ -1,7 +1,9 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory.h>
 
+#if _WIN32
 unsigned int s32( unsigned int i ) 
 {
 	return ( (i>>24) | (i<<24) | ((i&0x00FF0000)>>8) | ((i&0x0000FF00)<<8) );
@@ -10,6 +12,11 @@ unsigned short s16( unsigned short s )
 {
 	return (s>>8) | (s<<8);
 }
+#else
+#include <arpa/inet.h>
+unsigned int s32(unsigned int i) { return ntohl(i); }
+unsigned int s16(unsigned short s) { return ntohs(s); }
+#endif
 
 int main( int argc, char * argv[] )
 {
@@ -33,7 +40,7 @@ int main( int argc, char * argv[] )
 
 	fread( &magic, sizeof( unsigned int ), 1, in );
 
-	if( s32(magic)&0xFFFFFF00 != 0x41534800 )
+	if( (s32(magic)&0xFFFFFF00) != 0x41534800 )
 	{
 		printf("This is not a valid ASH file\n");
 		return 0;
